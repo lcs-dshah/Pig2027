@@ -155,6 +155,7 @@ struct PigView: View {
 
         // Pick a random whole number from 1 to 6, just like a real die.
         let roll: Int = Int.random(in: 1...6)
+        rollsThisTurn += 1
 
         // Show the matching die face. For a roll of 4, the symbol is "die.face.4.fill".
         dieSymbol = "die.face.\(roll).fill"
