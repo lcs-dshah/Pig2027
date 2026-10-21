@@ -9,7 +9,8 @@
 //  Roll a 1 and you lose your turn total, and your turn is over.
 //  Click Hold to bank your turn total into your score and end your turn.
 //
-//  WHAT IT DOES NOT DO YET
+//  //  NEW IN LESSON 5
+//  The first player to bank 100 points or more wins.
 //  Nobody can win! The scores just keep going up.
 //  In the real game, the first player to reach 100 points wins.
 //
@@ -21,6 +22,9 @@ import SwiftUI
 let playerOneColor: Color = Color.blue
 let playerTwoColor: Color = Color.orange
 
+// The first player to reach this score wins.
+let winningScore: Int = 100
+
 // The game itself: what it remembers, what it shows on the screen,
 // and what it does when you click a button.
 struct PigView: View {
@@ -30,9 +34,12 @@ struct PigView: View {
     // Each @State variable is something the game remembers.
     // When one of them changes, the screen updates by itself.
 
-    // The points each player has banked. Banked points are safe.
+    // The points each player banked. Banked points are safe.
     @State var playerOneScore: Int = 0
     @State var playerTwoScore: Int = 0
+    
+    // Becomes true when somebody wins.
+    @State var gameIsOver: Bool = false
 
     // The points collected so far on this turn.
     // They are not safe until the player clicks Hold.
@@ -95,11 +102,18 @@ struct PigView: View {
 
             Spacer()
 
-            // Whose turn is it?
-            Text("Player \(currentPlayer), your turn")
-                .font(.title)
-                .bold()
-                .foregroundStyle(turnColor)
+            // Say whose turn it is, or that the game is over.
+            if !gameIsOver {
+                Text("Player \(currentPlayer), your turn")
+                    .font(.title)
+                    .bold()
+                    .foregroundStyle(turnColor)
+            } else {
+                Text("Game over")
+                    .font(.title)
+                    .bold()
+                    .foregroundStyle(turnColor)
+            }
 
             // The die.
             // TRY: Change the size of the die from 120 to something bigger or smaller.
@@ -137,9 +151,11 @@ struct PigView: View {
             .bold()
             .controlSize(.large)
             .tint(turnColor)
-
-            Button("New Game") {
-                startNewGame()
+            // Nobody can roll or hold once the game is over.
+            .disabled(gameIsOver)
+ 
+            Button("New Game") {                startNewGame()
+                gameIsOver = false
             }
         }
         .padding(32)
@@ -180,9 +196,20 @@ struct PigView: View {
         } else {
             playerTwoScore += turnTotal
         }
-        message = "Player \(currentPlayer) banked \(turnTotal) points."
-        turnTotal = 0
-        switchPlayer()
+ 
+        // Has either player reached the winning score?
+        let someoneHasWon: Bool = playerOneScore >= winningScore || playerTwoScore >= winningScore
+ 
+        if someoneHasWon {
+            message = "Player \(currentPlayer) wins! Click New Game to play again."
+            dieSymbol = "trophy.fill"
+            turnTotal = 0
+            gameIsOver = true
+        } else {
+            message = "Player \(currentPlayer) banked \(turnTotal) points."
+            turnTotal = 0
+            switchPlayer()
+        }
     }
 
     // Passes the turn to the other player.
